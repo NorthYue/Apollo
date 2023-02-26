@@ -25,10 +25,12 @@ namespace edge_creator {
 void GetPbEdge(const Node& node_from, const Node& node_to,
                const Edge::DirectionType& type,
                const RoutingConfig& routing_config, Edge* edge) {
+  // 设置起始，终止车道和类型 
   edge->set_from_lane_id(node_from.lane_id());
   edge->set_to_lane_id(node_to.lane_id());
   edge->set_direction_type(type);
 
+  // 默认代价为0，即直接向前开的代价
   edge->set_cost(0.0);
   if (type == Edge::LEFT || type == Edge::RIGHT) {
     const auto& target_range =
@@ -38,7 +40,9 @@ void GetPbEdge(const Node& node_from, const Node& node_to,
       changing_area_length += range.end().s() - range.start().s();
     }
     double ratio = 1.0;
+    // 计算代价
     if (changing_area_length < routing_config.base_changing_length()) {
+      // ratio为什么这么设置，下面的代价系数为什么这么设定
       ratio = std::pow(
           changing_area_length / routing_config.base_changing_length(), -1.5);
     }

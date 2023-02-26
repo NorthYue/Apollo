@@ -26,24 +26,31 @@ namespace routing {
 class RoutingComponent final
     : public ::apollo::cyber::Component<RoutingRequest> {
  public:
+   // default用来控制默认构造函数的生成。显式地指示编译器生成该函数的默认版本。
   RoutingComponent() = default;
   ~RoutingComponent() = default;
 
  public:
   bool Init() override;
+    // 收到routing request的时候触发
   bool Proc(const std::shared_ptr<RoutingRequest>& request) override;
 
  private:
+   // routing消息发布handle
   std::shared_ptr<::apollo::cyber::Writer<RoutingResponse>> response_writer_ =
       nullptr;
   std::shared_ptr<::apollo::cyber::Writer<RoutingResponse>>
       response_history_writer_ = nullptr;
+  // Routing类
   Routing routing_;
   std::shared_ptr<RoutingResponse> response_ = nullptr;
+  // 定时器
   std::unique_ptr<::apollo::cyber::Timer> timer_;
+  // 锁
   std::mutex mutex_;
 };
 
+// 在cyber框架中注册routing模块
 CYBER_REGISTER_COMPONENT(RoutingComponent)
 
 }  // namespace routing
