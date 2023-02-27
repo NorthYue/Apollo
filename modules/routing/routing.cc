@@ -36,10 +36,14 @@ Routing::Routing()
     : monitor_logger_buffer_(common::monitor::MonitorMessageItem::ROUTING) {}
 
 apollo::common::Status Routing::Init() {
+  // 读取routing_map，也就是点和边
   const auto routing_map_file = apollo::hdmap::RoutingMapFile();
   AINFO << "Use routing topology graph path: " << routing_map_file;
   navigator_ptr_.reset(new Navigator(routing_map_file));
 
+  // 读取地图，用来查找routing request请求的点距离最近的lane，
+  // 并且返回对应的lane id，这里很好理解，比如你在小区里面，需要打车，
+  // 需要找到最近的乘车点，说直白点，就是找到最近的路。
   hdmap_ = apollo::hdmap::HDMapUtil::BaseMapPtr();
   ACHECK(hdmap_) << "Failed to load map file:" << apollo::hdmap::BaseMapFile();
 
@@ -317,10 +321,13 @@ bool Routing::Process(const std::shared_ptr<RoutingRequest>& routing_request,
   CHECK_NOTNULL(routing_response);
   AINFO << "Get new routing request:" << routing_request->DebugString();
 
+  // 找到routing_request节点最近的路
   const auto& fixed_requests = FillLaneInfoIfMissing(*routing_request);
   double min_routing_length = std::numeric_limits<double>::max();
   for (const auto& fixed_request : fixed_requests) {
     RoutingResponse routing_response_temp;
+    // 是否能够找到规划路径  
+    // TODO: 这里有点变化
     if (navigator_ptr_->SearchRoute(fixed_request, &routing_response_temp)) {
       const double routing_length =
           routing_response_temp.measurement().distance();

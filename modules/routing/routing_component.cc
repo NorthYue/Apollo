@@ -35,6 +35,7 @@ bool RoutingComponent::Init() {
   AINFO << "Config file: " << cyber::ComponentBase::ConfigFilePath()
         << " is loaded.";
 
+  // 设置消息qos，控制流量，创建消息发布response_writer_
   apollo::cyber::proto::RoleAttributes attr;
   attr.set_channel_name(routing_conf.topic_config().routing_response_topic());
   auto qos = attr.mutable_qos_profile();
@@ -56,7 +57,9 @@ bool RoutingComponent::Init() {
   qos_history->set_durability(
       apollo::cyber::proto::QosDurabilityPolicy::DURABILITY_TRANSIENT_LOCAL);
 
+  // 历史消息发布，和response_writer_类似
   response_history_writer_ = node_->CreateWriter<RoutingResponse>(attr_history);
+    // 创建定时器
   std::weak_ptr<RoutingComponent> self =
       std::dynamic_pointer_cast<RoutingComponent>(shared_from_this());
   timer_.reset(new ::apollo::cyber::Timer(
@@ -75,14 +78,19 @@ bool RoutingComponent::Init() {
       false));
   timer_->Start();
 
+  // 执行Routing类
   return routing_.Init().ok() && routing_.Start().ok();
 }
 
+
+// 当routing模块收到routing_request时，会触发"Proc()"，返回routing_response:
 bool RoutingComponent::Proc(const std::shared_ptr<RoutingRequest>& request) {
   auto response = std::make_shared<RoutingResponse>();
+  // 响应routing_请求
   if (!routing_.Process(request, response.get())) {
     return false;
   }
+  // 填充响应头部信息，并且发布
   common::util::FillHeader(node_->Name(), response.get());
   response_writer_->Write(response);
   {
