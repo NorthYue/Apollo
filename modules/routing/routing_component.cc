@@ -84,6 +84,7 @@ bool RoutingComponent::Init() {
 
 
 // 当routing模块收到routing_request时，会触发"Proc()"，返回routing_response:
+// RoutingRequest信息是其他模块发送的，RoutingComponent通过继承Component组件，实现Routing模块事件触发
 bool RoutingComponent::Proc(const std::shared_ptr<RoutingRequest>& request) {
   auto response = std::make_shared<RoutingResponse>();
   // 响应routing_请求

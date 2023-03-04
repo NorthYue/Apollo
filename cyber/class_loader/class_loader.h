@@ -37,14 +37,18 @@ class ClassLoader {
   explicit ClassLoader(const std::string& library_path);
   virtual ~ClassLoader();
 
+  // 库是否已经加载
   bool IsLibraryLoaded();
   bool LoadLibrary();
   int UnloadLibrary();
   const std::string GetLibraryPath() const;
+  // 获取类名称
   template <typename Base>
   std::vector<std::string> GetValidClassNames();
+  // 实例化类对象
   template <typename Base>
   std::shared_ptr<Base> CreateClassObj(const std::string& class_name);
+  // 类是否有效
   template <typename Base>
   bool IsClassValid(const std::string& class_name);
 
@@ -53,10 +57,15 @@ class ClassLoader {
   void OnClassObjDeleter(Base* obj);
 
  private:
+  // 类的路径
   std::string library_path_;
+  // 类加载引用次数
   int loadlib_ref_count_;
+  // 类加载引用次数锁
   std::mutex loadlib_ref_count_mutex_;
+  // 类引用次数
   int classobj_ref_count_;
+  // 类引用次数锁
   std::mutex classobj_ref_count_mutex_;
 };
 
@@ -75,10 +84,12 @@ bool ClassLoader::IsClassValid(const std::string& class_name) {
 template <typename Base>
 std::shared_ptr<Base> ClassLoader::CreateClassObj(
     const std::string& class_name) {
+  // 加载库
   if (!IsLibraryLoaded()) {
     LoadLibrary();
   }
 
+  // 根据类名称创建对象
   Base* class_object = utility::CreateClassObj<Base>(class_name, this);
   if (class_object == nullptr) {
     AWARN << "CreateClassObj failed, ensure class has been registered. "
@@ -86,8 +97,10 @@ std::shared_ptr<Base> ClassLoader::CreateClassObj(
     return std::shared_ptr<Base>();
   }
 
+  // 类引用计数加1
   std::lock_guard<std::mutex> lck(classobj_ref_count_mutex_);
   classobj_ref_count_ = classobj_ref_count_ + 1;
+  // 指定类的析构函数
   std::shared_ptr<Base> classObjSharePtr(
       class_object, std::bind(&ClassLoader::OnClassObjDeleter<Base>, this,
                               std::placeholders::_1));
@@ -100,6 +113,7 @@ void ClassLoader::OnClassObjDeleter(Base* obj) {
     return;
   }
 
+  // 删除对象的时候让类引用计数减1
   std::lock_guard<std::mutex> lck(classobj_ref_count_mutex_);
   delete obj;
   --classobj_ref_count_;

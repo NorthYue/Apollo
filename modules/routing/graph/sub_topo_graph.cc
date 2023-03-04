@@ -69,12 +69,14 @@ void GetSortedValidRange(const TopoNode* topo_node,
   double start_s = topo_node->StartS();
   double end_s = topo_node->EndS();
   std::vector<double> all_value;
+  // 添加node起点，边界和node终点
   all_value.push_back(start_s);
   for (const auto& range : block_range) {
     all_value.push_back(range.StartS());
     all_value.push_back(range.EndS());
   }
   all_value.push_back(end_s);
+  // **核心在这里，每次i+2，即跳过balck_range，生成valid_range**
   for (size_t i = 0; i < all_value.size(); i += 2) {
     NodeSRange new_range(all_value[i], all_value[i + 1]);
     valid_range->push_back(std::move(new_range));
@@ -91,6 +93,8 @@ bool IsReachable(const TopoNode* from_node, const TopoNode* to_node) {
 
 }  // namespace
 
+
+// 生成子图
 SubTopoGraph::SubTopoGraph(
     const std::unordered_map<const TopoNode*, std::vector<NodeSRange> >&
         black_map) {
@@ -98,10 +102,12 @@ SubTopoGraph::SubTopoGraph(
   for (const auto& map_iter : black_map) {
     valid_range.clear();
     GetSortedValidRange(map_iter.first, map_iter.second, &valid_range);
+    // 生成子节点
     InitSubNodeByValidRange(map_iter.first, valid_range);
   }
 
   for (const auto& map_iter : black_map) {
+    // 生成子边
     InitSubEdge(map_iter.first);
   }
 
@@ -118,11 +124,14 @@ void SubTopoGraph::GetSubInEdgesIntoSubGraph(
   const auto* from_node = edge->FromNode();
   const auto* to_node = edge->ToNode();
   std::unordered_set<TopoNode*> sub_nodes;
+  // 如果起点是子节点，终点是子节点，或者终点没有子节点，返回边
+  // TODO: **这里传入的是edge，根本不可能是子节点？**
   if (from_node->IsSubNode() || to_node->IsSubNode() ||
       !GetSubNodes(to_node, &sub_nodes)) {
     sub_edges->insert(edge);
     return;
   }
+  // 如果终点有子节点，则返回所有的子边
   for (const auto* sub_node : sub_nodes) {
     for (const auto* in_edge : sub_node->InFromAllEdge()) {
       if (in_edge->FromNode() == from_node) {

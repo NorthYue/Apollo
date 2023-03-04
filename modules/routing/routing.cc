@@ -44,6 +44,9 @@ apollo::common::Status Routing::Init() {
   // 读取地图，用来查找routing request请求的点距离最近的lane，
   // 并且返回对应的lane id，这里很好理解，比如你在小区里面，需要打车，
   // 需要找到最近的乘车点，说直白点，就是找到最近的路。
+  // 通过map模块提供的功能包，读取原始地图信息
+  // 读取加载地图过程中，生成地图要素的kdtree，如lane_segment_kdtree
+  // 用于地图要素的快速搜索
   hdmap_ = apollo::hdmap::HDMapUtil::BaseMapPtr();
   ACHECK(hdmap_) << "Failed to load map file:" << apollo::hdmap::BaseMapFile();
 

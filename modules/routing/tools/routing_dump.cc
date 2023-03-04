@@ -32,6 +32,7 @@ void MessageCallback(
 }
 
 int main(int argc, char* argv[]) {
+  // 保存routing请求
   google::ParseCommandLineFlags(&argc, &argv, true);
 
   apollo::cyber::Init(argv[0]);

@@ -33,6 +33,8 @@ namespace mainboard {
 using apollo::cyber::proto::DagConfig;
 
 class ModuleController {
+  // 实现cyber模块的加载
+  // 可以实现动态加载与关闭单个cyber模块（定位，感知，规划等），在dreamview中的模块开关按钮来动态加载和卸载对应的模块
  public:
   explicit ModuleController(const ModuleArgument& args);
   virtual ~ModuleController() = default;
@@ -56,6 +58,7 @@ class ModuleController {
 inline ModuleController::ModuleController(const ModuleArgument& args)
     : args_(args) {}
 
+// 通过loadall来加载所有模块
 inline bool ModuleController::Init() { return LoadAll(); }
 
 }  // namespace mainboard

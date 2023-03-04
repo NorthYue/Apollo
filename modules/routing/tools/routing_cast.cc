@@ -26,6 +26,7 @@ DEFINE_string(routing_dump_file, "/tmp/routing.pb.txt",
 using apollo::cyber::Rate;
 
 int main(int argc, char *argv[]) {
+  // 定时发送routing response响应
   google::ParseCommandLineFlags(&argc, &argv, true);
   apollo::cyber::Init(argv[0]);
 

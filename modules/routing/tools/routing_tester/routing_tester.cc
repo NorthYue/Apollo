@@ -31,6 +31,7 @@ DEFINE_string(routing_test_file,
 using apollo::cyber::Rate;
 
 int main(int argc, char *argv[]) {
+  // 定时发送routing request请求
   google::ParseCommandLineFlags(&argc, &argv, true);
 
   // init cyber framework

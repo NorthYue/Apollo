@@ -7,11 +7,11 @@ import "modules/common_msgs/map_msgs/map_id.proto";
 
 // A junction is the junction at-grade of two or more roads crossing.
 message Junction {
-  optional Id id = 1;
+  optional Id id = 1;            //编号
 
-  optional Polygon polygon = 2;
+  optional Polygon polygon = 2;  //多边形
 
-  repeated Id overlap_id = 3;
+  repeated Id overlap_id = 3;    //重叠id
   enum Type {
     UNKNOWN = 0;
     IN_ROAD = 1;

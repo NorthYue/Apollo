@@ -24,7 +24,7 @@ namespace routing {
 class Strategy {
  public:
   virtual ~Strategy() {}
-
+  // 在派生类中实现查找方法
   virtual bool Search(const TopoGraph* graph, const SubTopoGraph* sub_graph,
                       const TopoNode* src_node, const TopoNode* dest_node,
                       std::vector<NodeWithRange>* const result_nodes) = 0;

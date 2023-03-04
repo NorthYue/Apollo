@@ -148,13 +148,18 @@ void BlackListRangeGenerator::AddBlackMapFromTerminal(
   }
 
   double start_cut_s = MoveSBackward(start_s_adjusted, 0.0);
+  // 这里range的起点和终点是同一个点，为routing的起点
   range_manager->Add(src_node, start_cut_s, start_cut_s);
+  // 把平行的节点也按照比例做相同的切分
   AddBlackMapFromOutParallel(src_node, start_cut_s / start_length,
                              range_manager);
 
+  // 这里range的起点和终点是同一个点，为routing的终点
   double end_cut_s = MoveSForward(end_s_adjusted, end_length);
   range_manager->Add(dest_node, end_cut_s, end_cut_s);
   AddBlackMapFromInParallel(dest_node, end_cut_s / end_length, range_manager);
+
+  // 排序并且合并
   range_manager->SortAndMerge();
 }
 

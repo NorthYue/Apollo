@@ -10,9 +10,10 @@ import "modules/common_msgs/map_msgs/map_id.proto";
 // A driver who stops or slows down to let another vehicle through has yielded
 // the right of way to that vehicle.
 message YieldSign {
-  optional Id id = 1;
+  // 让行标志
+  optional Id id = 1;       //编号
 
-  repeated Curve stop_line = 2;
+  repeated Curve stop_line = 2;    //在哪里结束
 
-  repeated Id overlap_id = 3;
+  repeated Id overlap_id = 3;     //重叠id
 }

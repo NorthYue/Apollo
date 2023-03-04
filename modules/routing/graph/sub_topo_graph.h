@@ -26,6 +26,8 @@
 namespace apollo {
 namespace routing {
 
+// 关于子图的分析就结束了，子图主要是针对一条lane切分为几个子节点的情况，
+// 根据切分好的子节点从新生成一张图，比原先根据routing_map建立的图有更细的粒度。
 class SubTopoGraph {
  public:
   SubTopoGraph(const std::unordered_map<const TopoNode*,

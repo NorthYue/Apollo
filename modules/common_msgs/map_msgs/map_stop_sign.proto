@@ -8,15 +8,15 @@ import "modules/common_msgs/map_msgs/map_id.proto";
 // A stop sign is a traffic sign to notify drivers that they must stop before
 // proceeding.
 message StopSign {
-  optional Id id = 1;
+  optional Id id = 1;         //编号
 
-  repeated Curve stop_line = 2;
+  repeated Curve stop_line = 2;    //停止线，Curve曲线应该是基础类型
 
-  repeated Id overlap_id = 3;
+  repeated Id overlap_id = 3;     //重叠id
 
   enum StopType {
-    UNKNOWN = 0;
-    ONE_WAY = 1;
+    UNKNOWN = 0;        //未知
+    ONE_WAY = 1;        //只有一车道可以停
     TWO_WAY = 2;
     THREE_WAY = 3;
     FOUR_WAY = 4;
