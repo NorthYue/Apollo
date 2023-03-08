@@ -295,6 +295,8 @@ void IntraDispatcher::OnMessage(uint64_t channel_id,
     auto handler =
         std::dynamic_pointer_cast<ListenerHandler<MessageT>>(*handler_base);
     if (handler) {
+      //关键代码
+      // 执行了handler内部绑定的DataDispatcher<T>::Dispatch函数， DataDispatcher<T>::Dispatch函数是在cyber/node/reader_base.h中的GetReceiver函数内被绑定
       handler->Run(message, message_info);
     } else {
       auto msg_size = message::FullByteSize(*message);

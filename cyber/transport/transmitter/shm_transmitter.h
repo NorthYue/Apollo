@@ -104,6 +104,7 @@ bool ShmTransmitter<M>::Transmit(const M& msg, const MessageInfo& msg_info) {
     return false;
   }
 
+  // 初始化一个wb，给wb分配存储空间
   WritableBlock wb;
   std::size_t msg_size = message::ByteSize(msg);
   if (!segment_->AcquireBlockToWrite(msg_size, &wb)) {
@@ -111,28 +112,35 @@ bool ShmTransmitter<M>::Transmit(const M& msg, const MessageInfo& msg_info) {
     return false;
   }
 
+  // 消息序列化，序列化后的数据存入wb.buf
   ADEBUG << "block index: " << wb.index;
   if (!message::SerializeToArray(msg, wb.buf, static_cast<int>(msg_size))) {
     AERROR << "serialize to array failed.";
     segment_->ReleaseWrittenBlock(wb);
     return false;
   }
+  // 设置msg_size
   wb.block->set_msg_size(msg_size);
 
+  // 获得msg_info的存储地址，序列化msg_info，序列化后的msg_info存入wb
   char* msg_info_addr = reinterpret_cast<char*>(wb.buf) + msg_size;
   if (!msg_info.SerializeTo(msg_info_addr, MessageInfo::kSize)) {
     AERROR << "serialize message info failed.";
     segment_->ReleaseWrittenBlock(wb);
     return false;
   }
+  //设置set_msg_info_size大小
   wb.block->set_msg_info_size(MessageInfo::kSize);
   segment_->ReleaseWrittenBlock(wb);
 
+  //用host_id_, wb.index, channel_id_初始化一个readable_info对象
   ReadableInfo readable_info(host_id_, wb.index, channel_id_);
 
   ADEBUG << "Writing sharedmem message: "
          << common::GlobalData::GetChannelById(channel_id_)
          << " to block: " << wb.index;
+
+  // readable_info 传输到notifier_内，通过共享内存的方式存储
   return notifier_->Notify(readable_info);
 }
 

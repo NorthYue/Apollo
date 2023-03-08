@@ -62,6 +62,9 @@ bool ConditionNotifier::Notify(const ReadableInfo& info) {
 
   uint64_t seq = indicator_->next_seq.fetch_add(1);
   uint64_t idx = seq % kBufLength;
+  // readable_info循环的存入了indicator_->infos中
+  // indicator_对象是在ConditionNotifier::Init函数内创建，也是通过共享内存的方式，其大小是有限的，
+  // 在同一个主机上的其他的进程都可以通过唯一的key(key_ = static_cast(Hash("/apollo/cyber/transport/shm/notifier))去访问该内存区域
   indicator_->infos[idx] = info;
   indicator_->seqs[idx] = seq;
 

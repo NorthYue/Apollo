@@ -104,8 +104,11 @@ bool Manager::Join(const RoleAttributes& attr, RoleType role,
   RETURN_VAL_IF(!((1 << role) & allowed_role_), false);
   RETURN_VAL_IF(!Check(attr), false);
   ChangeMsg msg;
+  // 转换成ChangeMsg消息格式
   Convert(attr, role, OperateType::OPT_JOIN, &msg);
+  // 把当前节点信息加入当前节点的拓扑图中
   Dispose(msg);
+  // 把当前节点信息发布给远程节点
   if (need_publish) {
     return Publish(msg);
   }
@@ -191,12 +194,16 @@ void Manager::OnRemoteChange(const std::string& msg_str) {
     return;
   }
 
+  //消息解析
   ChangeMsg msg;
   RETURN_IF(!message::ParseFromString(msg_str, &msg));
+  //判断是不是来自同一个节点，是的话就返回，只处理远程节点
   if (IsFromSameProcess(msg)) {
     return;
   }
+  // 做一些消息检查工作
   RETURN_IF(!Check(msg.role_attr()));
+  // 把远程节点信息加入当前节点的拓扑图中
   Dispose(msg);
 }
 

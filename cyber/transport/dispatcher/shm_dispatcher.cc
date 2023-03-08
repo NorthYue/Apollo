@@ -60,8 +60,11 @@ void ShmDispatcher::ReadMessage(uint64_t channel_id, uint32_t block_index) {
   ADEBUG << "Reading sharedmem message: "
          << GlobalData::GetChannelById(channel_id)
          << " from block: " << block_index;
+  // 创建一个rb对象
   auto rb = std::make_shared<ReadableBlock>();
+  // 把block_index填入rb->index
   rb->index = block_index;
+  // 获取反序列化之后的msg数据
   if (!segments_[channel_id]->AcquireBlockToRead(rb.get())) {
     AWARN << "fail to acquire block, channel: "
           << GlobalData::GetChannelById(channel_id)
@@ -69,11 +72,13 @@ void ShmDispatcher::ReadMessage(uint64_t channel_id, uint32_t block_index) {
     return;
   }
 
+  // 获取反序列化之后的msg_info数据
   MessageInfo msg_info;
   const char* msg_info_addr =
       reinterpret_cast<char*>(rb->buf) + rb->block->msg_size();
 
   if (msg_info.DeserializeFrom(msg_info_addr, rb->block->msg_info_size())) {
+    // 调用OnMessage函数
     OnMessage(channel_id, rb, msg_info);
   } else {
     AERROR << "error msg info of channel:"
@@ -147,6 +152,7 @@ void ShmDispatcher::ThreadFunc() {
 bool ShmDispatcher::Init() {
   host_id_ = common::Hash(GlobalData::Instance()->HostIp());
   notifier_ = NotifierFactory::CreateNotifier();
+  //reader端在初始化ShmDispatcher对象的时候会在ShmDispatcher::Init内启动一个线程
   thread_ = std::thread(&ShmDispatcher::ThreadFunc, this);
   scheduler::Instance()->SetInnerThreadAttr("shm_disp", &thread_);
   return true;

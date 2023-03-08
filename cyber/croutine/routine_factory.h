@@ -57,7 +57,9 @@ RoutineFactory CreateRoutineFactory(
       std::shared_ptr<M0> msg;
       for (;;) {
         CRoutine::GetCurrentRoutine()->set_state(RoutineState::DATA_WAIT);
+        //通过TryFetch获得消息
         if (dv->TryFetch(msg)) {
+          //执行消息处理回调函数
           f(msg);
           CRoutine::Yield(RoutineState::READY);
         } else {

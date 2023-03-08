@@ -178,11 +178,14 @@ void Writer<MessageT>::JoinTheTopology() {
   // get peer readers
   const std::string& channel_name = this->role_attr_.channel_name();
   std::vector<proto::RoleAttributes> readers;
+  // 获取当前节点reader
   channel_manager_->GetReadersOfChannel(channel_name, &readers);
+  // 根据当前节点的reader来决定是否启动transmitter_->Enable
   for (auto& reader : readers) {
     transmitter_->Enable(reader);
   }
 
+  // 把本节点的信息加入到拓扑图中
   channel_manager_->Join(this->role_attr_, proto::RoleType::ROLE_WRITER,
                          message::HasSerializer<MessageT>::value);
 }
@@ -195,15 +198,19 @@ void Writer<MessageT>::LeaveTheTopology() {
 
 template <typename MessageT>
 void Writer<MessageT>::OnChannelChange(const proto::ChangeMsg& change_msg) {
+  // 这个函数只负责接收其他节点发过来的change_msg消息
+  // 首先验证消息是不是ROLE_READER，如果不是就返回，
   if (change_msg.role_type() != proto::RoleType::ROLE_READER) {
     return;
   }
 
+  //然后验证reader消息名字是不是和writer消息一致，不一致就返回
   auto& reader_attr = change_msg.role_attr();
   if (reader_attr.channel_name() != this->role_attr_.channel_name()) {
     return;
   }
 
+  // 对其他节点的reader进行transmitter_->Enable，也就是消息发布，和刚刚提到的不见兔子不撒鹰一个思路
   auto operate_type = change_msg.operate_type();
   if (operate_type == proto::OperateType::OPT_JOIN) {
     transmitter_->Enable(reader_attr);

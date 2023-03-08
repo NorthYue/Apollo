@@ -269,8 +269,10 @@ void ChannelManager::OnTopoModuleLeave(const std::string& host_name,
 }
 
 void ChannelManager::DisposeJoin(const ChangeMsg& msg) {
+  // 检查消息类型
   ScanMessageType(msg);
 
+  // 使用node_name创建拓扑顶点
   Vertice v(msg.role_attr().node_name());
   Edge e;
   e.set_value(msg.role_attr().channel_name());
@@ -281,15 +283,18 @@ void ChannelManager::DisposeJoin(const ChangeMsg& msg) {
           msg.role_attr().proto_desc());
     }
     auto role = std::make_shared<RoleWriter>(msg.role_attr(), msg.timestamp());
+    // 如果是writer类型msg就把node_id和channel_id分别添加到node_writers_与channel_writers_中
     node_writers_.Add(role->attributes().node_id(), role);
     channel_writers_.Add(role->attributes().channel_id(), role);
     e.set_src(v);
   } else {
     auto role = std::make_shared<RoleReader>(msg.role_attr(), msg.timestamp());
+    // 如果是reader类型msg就把node_id和channel_id分别添加到node_readers_与channel_readers_中
     node_readers_.Add(role->attributes().node_id(), role);
     channel_readers_.Add(role->attributes().channel_id(), role);
     e.set_dst(v);
   }
+  // 把e添加到node_graph_中
   node_graph_.Insert(e);
 }
 

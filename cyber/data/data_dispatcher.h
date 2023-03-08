@@ -80,6 +80,7 @@ bool DataDispatcher<T>::Dispatch(const uint64_t channel_id,
     for (auto& buffer_wptr : *buffers) {
       if (auto buffer = buffer_wptr.lock()) {
         std::lock_guard<std::mutex> lock(buffer->Mutex());
+        // 调用了Fill函数向buffer内填充数据 向buffer内填充数据
         buffer->Fill(msg);
       }
     }

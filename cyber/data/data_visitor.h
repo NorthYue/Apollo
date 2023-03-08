@@ -180,7 +180,9 @@ class DataVisitor<M0, NullType, NullType, NullType> : public DataVisitorBase {
     data_notifier_->AddNotifier(buffer_.channel_id(), notifier_);
   }
 
+  // 获取数据
   bool TryFetch(std::shared_ptr<M0>& m0) {  // NOLINT
+    // 获取buffer内的消息
     if (buffer_.Fetch(&next_msg_index_, m0)) {
       next_msg_index_++;
       return true;
