@@ -72,17 +72,23 @@ void TimingWheel::AddTask(const std::shared_ptr<TimerTask>& task) {
 
 void TimingWheel::AddTask(const std::shared_ptr<TimerTask>& task,
                           const uint64_t current_work_wheel_index) {
+  // 1.不是运行状态则启动时间轮
   if (!running_) {
+    // 2.启动Tick线程，并且加入scheduler调度。
     Start();
   }
+
+  // 3. 计算一下轮bucket编号
   auto work_wheel_index = current_work_wheel_index +
                           static_cast<uint64_t>(std::ceil(
                               static_cast<double>(task->next_fire_duration_ms) /
                               TIMER_RESOLUTION_MS));
+  // 4. 如果超过最大的bucket数
   if (work_wheel_index >= WORK_WHEEL_SIZE) {
     auto real_work_wheel_index = GetWorkWheelIndex(work_wheel_index);
     task->remainder_interval_ms = real_work_wheel_index;
     auto assistant_ticks = work_wheel_index / WORK_WHEEL_SIZE;
+    // 5.转一圈之后，直接加入剩余的bucket？？？
     if (assistant_ticks == 1 &&
         real_work_wheel_index < current_work_wheel_index_) {
       work_wheel_[real_work_wheel_index].AddTask(task);
